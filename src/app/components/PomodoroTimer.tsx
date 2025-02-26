@@ -26,11 +26,6 @@ export const PomodoroTimer: React.FC = () => {
   const { requestPermission, sendNotification } = useNotification();
   const timerRef = useRef<number | null>(null);
 
-  // Request notification permission on component mount
-  useEffect(() => {
-    requestPermission();
-  }, [requestPermission]);
-
   // Handle timer logic
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -55,10 +50,23 @@ export const PomodoroTimer: React.FC = () => {
   const handleTimerComplete = () => {
     setIsActive(false);
     
+    // Play a sound when timer completes
+    try {
+      const audio = new Audio('/timer-complete.mp3');
+      audio.play().catch(e => console.warn('Could not play timer sound:', e));
+    } catch (e) {
+      console.warn('Audio playback not supported');
+    }
+    
     if (mode === 'pomodoro') {
       const newCount = pomodorosCompleted + 1;
       setPomodorosCompleted(newCount);
-      sendNotification('Pomodoro completed!', 'Time for a break.');
+      
+      // Send notification via Service Worker
+      sendNotification(
+        'Pomodoro completed!', 
+        'Time for a break. You have completed ' + newCount + ' pomodoros.'
+      );
       
       // After 4 pomodoros, take a long break
       if (newCount % 4 === 0) {
@@ -67,11 +75,25 @@ export const PomodoroTimer: React.FC = () => {
         setMode('shortBreak');
       }
     } else {
-      sendNotification('Break completed!', 'Time to focus.');
+      // Send notification for break completion
+      sendNotification(
+        'Break completed!', 
+        mode === 'shortBreak' ? 'Time to focus.' : 'Long break complete. Ready for a new session?'
+      );
       setMode('pomodoro');
     }
   };
+  
+  useEffect(() => {
+    // Request notification permission immediately when component mounts
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      requestPermission().then(granted => {
+        console.log('Notification permission granted:', granted);
+      });
+    }
+  }, [requestPermission]);
 
+  
   const toggleTimer = () => {
     setIsActive(!isActive);
   };
