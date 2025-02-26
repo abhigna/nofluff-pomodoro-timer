@@ -8,7 +8,8 @@ export const useNotification = () => {
 
   // Register service worker when the component mounts
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    // This will only run on the client side
+    if (!('serviceWorker' in navigator)) {
       console.warn('Service Workers not supported in this environment');
       return;
     }
@@ -30,7 +31,7 @@ export const useNotification = () => {
   }, []);
 
   const requestPermission = useCallback(async () => {
-    if (typeof window === 'undefined' || !('Notification' in window)) {
+    if (!('Notification' in window)) {
       console.warn('Notifications not supported in this environment');
       return false;
     }
@@ -57,12 +58,13 @@ export const useNotification = () => {
     } catch (e) {
       console.warn('Audio playback not supported');
     }
-
-    if (typeof window === 'undefined') {
+    
+    // Check permission
+    if (!('Notification' in window)) {
+      console.warn('Notifications not supported');
       return;
     }
     
-    // Check permission
     if (Notification.permission !== 'granted') {
       console.warn('Notification permission not granted');
       requestPermission().then(granted => {
@@ -72,7 +74,7 @@ export const useNotification = () => {
     }
 
     // Try to use service worker for notification (preferred method)
-    if (navigator.serviceWorker.controller && swRegistration) {
+    if (navigator.serviceWorker && navigator.serviceWorker.controller && swRegistration) {
       console.log('Sending notification through Service Worker');
       navigator.serviceWorker.controller.postMessage({
         type: 'SHOW_NOTIFICATION',
@@ -89,9 +91,7 @@ export const useNotification = () => {
           body,
           icon: '/icons/icon-192x192.png',
           badge: '/icons/icon-192x192.png',
-          vibrate: [200, 100, 200],
-          tag: 'pomodoro-notification',
-          renotify: true
+          tag: 'pomodoro-notification'
         });
         
         // Close notification after 5 seconds

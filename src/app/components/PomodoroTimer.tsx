@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNotification } from '../hooks/useNotification';
 import styles from './PomodoroTimer.module.css';
+import dynamic from 'next/dynamic';
 
 type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
 
@@ -18,14 +19,15 @@ const DEFAULT_SETTINGS: TimerSettings = {
   longBreak: 15 * 60, // 15 minutes in seconds
 };
 
-export const PomodoroTimer: React.FC = () => {
+// Create a client-only version of the component with no SSR
+const PomodoroTimerClient: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [timeLeft, setTimeLeft] = useState(DEFAULT_SETTINGS.pomodoro);
   const [isActive, setIsActive] = useState(false);
   const [pomodorosCompleted, setPomodorosCompleted] = useState(0);
   const { requestPermission, sendNotification } = useNotification();
   const timerRef = useRef<number | null>(null);
-
+  
   // Handle timer logic
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -86,11 +88,9 @@ export const PomodoroTimer: React.FC = () => {
   
   useEffect(() => {
     // Request notification permission immediately when component mounts
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      requestPermission().then(granted => {
-        console.log('Notification permission granted:', granted);
-      });
-    }
+    requestPermission().then(granted => {
+      console.log('Notification permission granted:', granted);
+    });
   }, [requestPermission]);
 
   
@@ -158,4 +158,10 @@ export const PomodoroTimer: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};
+
+// Create a dynamic component with SSR disabled
+export const PomodoroTimer = dynamic(
+  () => Promise.resolve(PomodoroTimerClient),
+  { ssr: false }
+); 
