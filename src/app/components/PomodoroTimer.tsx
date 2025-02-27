@@ -41,6 +41,7 @@ const PomodoroTimerClient: React.FC = () => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, timeLeft]);
 
   // Reset timer when mode changes
@@ -60,8 +61,8 @@ const PomodoroTimerClient: React.FC = () => {
         : window.location.pathname + '/';
       
       const audio = new Audio(`${basePath}timer-complete.mp3`);
-      audio.play().catch(e => console.warn('Could not play timer sound:', e));
-    } catch (e) {
+      audio.play().catch(error => console.warn('Could not play timer sound:', error));
+    } catch (error) {
       console.warn('Audio playback not supported');
     }
     

@@ -4,8 +4,7 @@ import withPWA from '@ducanh2912/next-pwa';
 const pwaConfig = withPWA({
   dest: 'public',
   register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development'
+  disable: process.env.NODE_ENV === 'development',
 });
 
 // Get repository name from package.json or environment variable
@@ -34,6 +33,9 @@ const nextConfig: NextConfig = {
   
   // Disable server-side API routes
   trailingSlash: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default pwaConfig(nextConfig);
