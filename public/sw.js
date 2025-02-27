@@ -1,5 +1,6 @@
 // sw.js - Service Worker for Pomodoro Timer
 const CACHE_NAME = 'pomodoro-timer-v1';
+const BASE_PATH = self.location.pathname.replace('sw.js', '');
 
 // Install event - precache essential assets
 self.addEventListener('install', (event) => {
@@ -7,11 +8,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
-        '/',
-        '/index.html',
-        '/timer-complete.mp3',
-        '/notification-sound.mp3',
-        '/icons/icon-192x192.png'
+        BASE_PATH,
+        `${BASE_PATH}index.html`,
+        `${BASE_PATH}timer-complete.mp3`,
+        `${BASE_PATH}notification-sound.mp3`,
+        `${BASE_PATH}icons/icon-192x192.png`
         // Add other assets you want to cache
       ]);
     })
@@ -40,8 +41,8 @@ self.addEventListener('message', (event) => {
     
     self.registration.showNotification(title, {
       body: body || '',
-      icon: icon || '/icons/icon-192x192.png',
-      badge: '/icons/icon-192x192.png',
+      icon: icon || `${BASE_PATH}icons/icon-192x192.png`,
+      badge: `${BASE_PATH}icons/icon-192x192.png`,
       vibrate: [200, 100, 200],
       tag: 'pomodoro-notification',
       renotify: true,
@@ -66,7 +67,7 @@ self.addEventListener('notificationclick', (event) => {
         }
         
         if (clients.openWindow) {
-          return clients.openWindow('/');
+          return clients.openWindow(BASE_PATH);
         }
       })
   );

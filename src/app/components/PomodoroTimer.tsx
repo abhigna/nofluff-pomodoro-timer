@@ -54,7 +54,12 @@ const PomodoroTimerClient: React.FC = () => {
     
     // Play a sound when timer completes
     try {
-      const audio = new Audio('/timer-complete.mp3');
+      // Get the base path from the current location
+      const basePath = window.location.pathname.endsWith('/')
+        ? window.location.pathname
+        : window.location.pathname + '/';
+      
+      const audio = new Audio(`${basePath}timer-complete.mp3`);
       audio.play().catch(e => console.warn('Could not play timer sound:', e));
     } catch (e) {
       console.warn('Audio playback not supported');

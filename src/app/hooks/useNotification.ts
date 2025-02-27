@@ -5,6 +5,7 @@ import { useCallback, useState, useEffect } from 'react';
 export const useNotification = () => {
   const [permission, setPermission] = useState<NotificationPermission | null>(null);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [basePath, setBasePath] = useState<string>('');
 
   // Register service worker when the component mounts
   useEffect(() => {
@@ -14,13 +15,19 @@ export const useNotification = () => {
       return;
     }
 
+    // Determine base path from the current location
+    const path = window.location.pathname.endsWith('/')
+      ? window.location.pathname
+      : window.location.pathname + '/';
+    setBasePath(path);
+
     // Set initial permission
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
 
     // Register service worker
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register(`${path}sw.js`)
       .then(registration => {
         console.log('Service Worker registered with scope:', registration.scope);
         setSwRegistration(registration);
@@ -53,7 +60,7 @@ export const useNotification = () => {
 
     // First, play sound regardless of notification method
     try {
-      const audio = new Audio('/notification-sound.mp3');
+      const audio = new Audio(`${basePath}notification-sound.mp3`);
       audio.play().catch(e => console.warn('Could not play notification sound:', e));
     } catch (e) {
       console.warn('Audio playback not supported');
@@ -80,7 +87,7 @@ export const useNotification = () => {
         type: 'SHOW_NOTIFICATION',
         title,
         body,
-        icon: '/icons/icon-192x192.png'
+        icon: `${basePath}icons/icon-192x192.png`
       });
     } 
     // Fallback to direct Notification API
@@ -89,8 +96,8 @@ export const useNotification = () => {
       try {
         const notification = new Notification(title, {
           body,
-          icon: '/icons/icon-192x192.png',
-          badge: '/icons/icon-192x192.png',
+          icon: `${basePath}icons/icon-192x192.png`,
+          badge: `${basePath}icons/icon-192x192.png`,
           tag: 'pomodoro-notification'
         });
         
@@ -102,7 +109,7 @@ export const useNotification = () => {
     } else {
       console.warn('No notification method available');
     }
-  }, [swRegistration, requestPermission]);
+  }, [swRegistration, requestPermission, basePath]);
 
   return { permission, requestPermission, sendNotification };
 };
